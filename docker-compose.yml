@@ -1,0 +1,47 @@
+version: '2'
+services:
+  vehicle1:
+    build: ./ardupilot
+    image: ardupilot:1.0.0
+    network_mode: host
+    environment:
+      - INSTANCE=0
+      - SYSID=1
+      - NEED_START=true
+    restart: on-failure
+
+
+  vehicle2:
+    build: ./ardupilot
+    image: ardupilot:1.0.0
+    network_mode: host
+    environment:
+      - INSTANCE=1
+      - SYSID=2
+      - NEED_START=true
+      - FOLL_ENABLE=1
+    restart: on-failure
+
+
+  vehicle3:
+    build: ./ardupilot
+    image: ardupilot:1.0.0
+    network_mode: host
+    environment:
+      - INSTANCE=2
+      - SYSID=3
+      - NEED_START=true
+      - FOLL_ENABLE=1
+    restart: on-failure
+
+
+  vehicle4:
+    build: ./ardupilot
+    image: ardupilot:1.0.0
+    network_mode: host
+    environment:
+      - INSTANCE=3
+      - SYSID=4
+      - NEED_START=true
+      - FOLL_ENABLE=1
+    restart: on-failure

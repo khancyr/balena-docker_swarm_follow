@@ -1,0 +1,47 @@
+FROM arm32v7/python:3-slim AS builder
+
+# Make a working directory
+WORKDIR /ardupilot
+
+################################################################################
+### Install minimal build tools and remove cache. Don't do any update
+
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    g++ \
+    git \
+    libxml2-dev \
+    libxslt-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Clone simplified. Don't clone all the tree and nuttx stuff
+RUN git clone https://github.com/ArduPilot/ardupilot.git --depth 2 --no-single-branch src \
+    && cd src \
+    && git submodule update --init --recursive --depth 1
+
+ENV DISABLE_MAVNATIVE=True
+RUN python3 -m pip install --user --no-deps future pymavlink
+
+# Build binary
+RUN cd /ardupilot/src && ./waf configure --board sitl --no-submodule-update \
+    && ./waf copter
+
+# Second stage build
+FROM arm32v7/python:3-slim
+
+WORKDIR /ardupilot
+
+ENV DISABLE_MAVNATIVE=True
+# copy only the dependencies installation from the 1st stage image
+COPY --from=builder /root/.local /root/.local
+
+# Copy binary and defaut param file from previous image
+COPY --from=builder /ardupilot/src/build/sitl/bin/arducopter .
+COPY --from=builder /ardupilot/src/Tools/autotest/default_params/copter.parm .
+COPY mav_follow.py /ardupilot/mav_follow.py
+
+ENV PATH=/root/.local/bin:$PATH
+################################################################################
+#### Setup the entrypoint == application that will launch by default
+
+COPY entrypoint.sh /bin/entrypoint
+ENTRYPOINT ["entrypoint"]
