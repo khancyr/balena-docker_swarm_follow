@@ -13,7 +13,7 @@ services:
 
   vehicle2:
     build: ./ardupilot
-    image: ardupilot:1.0.0
+    image: ardupilot:latest
     network_mode: host
     environment:
       - INSTANCE=1
@@ -25,7 +25,7 @@ services:
 
   vehicle3:
     build: ./ardupilot
-    image: ardupilot:1.0.0
+    image: ardupilot:latest
     network_mode: host
     environment:
       - INSTANCE=2
@@ -37,7 +37,7 @@ services:
 
   vehicle4:
     build: ./ardupilot
-    image: ardupilot:1.0.0
+    image: ardupilot:latest
     network_mode: host
     environment:
       - INSTANCE=3
@@ -45,3 +45,25 @@ services:
       - NEED_START=true
       - FOLL_ENABLE=1
     restart: on-failure
+
+  mavproxy:
+    build: ./mavproxy-slim
+    image: mavproxy:latest
+    network_mode: host
+    ports:
+      - 8000:8000
+      - 8081:8081
+    environment:
+      - MAVPROXY=true
+
+  traefik:
+    build: ./traefik
+    image: traefik-balena:latest
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    labels:
+       io.balena.features.balena-socket: '1'

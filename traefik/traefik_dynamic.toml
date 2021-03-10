@@ -1,0 +1,64 @@
+[http]
+  [http.routers]
+    [http.routers.cesium]
+      entrypoints = ["insecure"]
+      rule = "Path(`/cesium`)"
+      service = "cesium"
+      middlewares = ["cesium-redirect"]
+    [http.routers.web]
+      entrypoints = ["insecure"]
+      rule = "Path(`/web`) || Path(`/copter.glb`) || Path(`/plane.glb`)"
+      service = "web"
+      middlewares = ["web-redirect"]
+    [http.routers.dashboard]
+      entrypoints = ["insecure"]
+      rule = "Path(`/dashboard`)"
+      service = "dashboard"
+
+  [http.services]
+    [http.services.cesium.loadbalancer]
+      passHostHeader = true
+      [[http.services.cesium.loadBalancer.servers]]
+        url = "http://localhost:8081/"
+    [http.services.web.loadbalancer]
+      passHostHeader = true
+      [[http.services.web.loadBalancer.servers]]
+        url = "http://localhost:8000/"
+    [http.services.dashboard.loadbalancer]
+      passHostHeader = true
+      [[http.services.dashboard.loadBalancer.servers]]
+        url = "http://localhost:8080/"
+
+[http.middlewares]
+  [http.middlewares.web-redirect.replacepathregex]
+    regex = "(^.*)/web"
+    replacement = "${1}"
+  [http.middlewares.cesium-redirect.replacepathregex]
+    regex = "(^.*)/cesium"
+    replacement = "${1}"
+[udp.routers]
+  [udp.routers.Router-1]
+    # By default, routers listen to all UDP entrypoints,
+    # i.e. "other", and "streaming".
+    service = "commander"
+[udp.services]
+  [udp.services.commander.loadBalancer]
+    [[udp.services.commander.loadBalancer.servers]]
+      address = "localhost:14550"
+
+[tls]
+  [tls.options]
+    [tls.options.default]
+      minVersion = "VersionTLS12"
+      sniStrict = true
+      cipherSuites = [
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+        "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
+        "TLS_AES_128_GCM_SHA256",
+        "TLS_AES_256_GCM_SHA384",
+        "TLS_CHACHA20_POLY1305_SHA256"
+      ]
+      curvePreferences = ["CurveP521","CurveP384"]

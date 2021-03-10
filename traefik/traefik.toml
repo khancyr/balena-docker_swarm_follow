@@ -1,0 +1,30 @@
+[global]
+  sendAnonymousUsage = false
+  checkNewVersion = true
+
+[log]
+  level = "INFO"
+  format = "common"
+
+[providers]
+  [providers.docker]
+    endpoint = "unix:///var/run/balena.sock"
+    watch = true
+    exposedByDefault = false
+    swarmMode = false
+  [providers.file]
+    filename = "traefik_dynamic.toml"
+    watch = true
+
+[api]
+  dashboard = true
+  debug = false
+  insecure = true
+
+[entryPoints]
+  [entryPoints.insecure]
+    address = ":80"
+    [entryPoints.insecure.forwardedHeaders]
+      insecure = true
+  [entryPoints.commander]
+    address = ":80/udp"
